@@ -16,6 +16,22 @@ It works fully offline. You don't need any keys to try it.
 - **Narration** uses `AVSpeechSynthesizer`, with each word highlighted as it is spoken. For much better voices, download an *Enhanced* or *Premium* voice in iOS Settings → Accessibility → Spoken Content → Voices. You can also use your own **Personal Voice** (iOS 17+).
 - **Purchases** use StoreKit 2 with the local `Solenne.storekit` config, which the shared scheme already points to. The paywall shows real weekly and yearly plans with free trials in the simulator. In Debug builds, Settings → *Pro (debug only)* unlocks everything.
 
+## Test on your iPhone without a Mac (TestFlight)
+
+Two GitHub Actions workflows run on GitHub's Mac machines:
+
+- **iOS build** compiles the app on every push. It needs no setup.
+- **TestFlight** archives, signs and uploads a build you can install with the TestFlight app. You start it by hand.
+
+One-time setup for TestFlight (works from a phone browser). It needs a paid **Apple Developer Program** membership.
+
+1. **App Store Connect → Apps → +** → New App. Register a unique bundle id, e.g. `com.yourname.solenne`.
+2. **App Store Connect → Users and Access → Integrations → App Store Connect API** → generate a key with the **Admin** role. Download the `.p8` file (you can only download it once) and note the Key ID and Issuer ID.
+3. **GitHub repo → Settings → Secrets and variables → Actions**:
+   - Secrets: `APPLE_TEAM_ID`, `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` (the full text of the `.p8` file).
+   - Variable: `BUNDLE_ID` (the bundle id from step 1).
+4. **GitHub → Actions → TestFlight → Run workflow**. After about 15 minutes of build time and Apple's processing, the build appears in TestFlight. Add yourself as an internal tester and install it from the TestFlight app.
+
 ## What's in the app
 
 | Area | Where |
