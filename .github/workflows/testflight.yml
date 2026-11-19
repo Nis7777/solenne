@@ -6,8 +6,10 @@
 #   ASC_KEY_ID         App Store Connect API key id
 #   ASC_ISSUER_ID      App Store Connect API issuer id
 #   ASC_KEY_P8         full text of the downloaded AuthKey_XXXX.p8 file
-# and this repository variable:
+# and these repository variables:
 #   BUNDLE_ID          the bundle id of the app record you created in App Store Connect
+#   SUPABASE_URL       optional: turns on Claude stories + ElevenLabs voices (see deploy-backend.yml)
+#   SUPABASE_ANON_KEY  optional: the project's anon public key
 name: TestFlight
 
 on:
@@ -66,6 +68,8 @@ jobs:
             PRODUCT_BUNDLE_IDENTIFIER="${{ vars.BUNDLE_ID }}" \
             CODE_SIGN_STYLE=Automatic \
             CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            SOLENNE_SUPABASE_URL="${{ vars.SUPABASE_URL }}" \
+            SOLENNE_SUPABASE_ANON_KEY="${{ vars.SUPABASE_ANON_KEY }}" \
             | tee archive.log | grep -E "error:|ARCHIVE (SUCCEEDED|FAILED)" || true
           grep -q "ARCHIVE SUCCEEDED" archive.log
 

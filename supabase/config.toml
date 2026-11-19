@@ -1,3 +1,5 @@
+project_id = "solenne"
+
 # Edge functions verify the caller's JWT (anonymous sign-in from the app).
 [functions.generate-story]
 verify_jwt = true

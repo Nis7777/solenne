@@ -6,6 +6,10 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>SolenneSupabaseURL</key>
+	<string>$(SOLENNE_SUPABASE_URL)</string>
+	<key>SolenneSupabaseAnonKey</key>
+	<string>$(SOLENNE_SUPABASE_ANON_KEY)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>

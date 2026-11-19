@@ -52,10 +52,27 @@ Everything you enter stays on the device, in `Documents/solenne.json`, written b
 
 ## Connect the backend (Claude + ElevenLabs)
 
-`supabase/` contains the server side of the generation pipeline: **text → voice → cached audio**.
+`supabase/` holds the server side of the generation pipeline: **text → voice → cached audio**. You can set it all up from a phone:
+
+1. Create a project at supabase.com. Note the database password you choose.
+2. In that project, open **Authentication → Sign In / Providers** and turn on **Anonymous sign-ins**.
+3. Get the keys:
+   - **ElevenLabs:** elevenlabs.io → Developers → API Keys. Voice cloning needs the Starter plan or higher.
+   - **Anthropic:** console.anthropic.com → API Keys.
+   - **Supabase:** supabase.com → Account → Access Tokens.
+4. In GitHub, open **Settings → Secrets and variables → Actions**:
+   - Secrets: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`.
+   - Variables:
+     - `SUPABASE_PROJECT_REF` (the id in your project's dashboard URL).
+     - `SUPABASE_URL` (`https://<ref>.supabase.co`).
+     - `SUPABASE_ANON_KEY` (Project Settings → API keys → anon public).
+5. Go to **Actions → Deploy backend → Run workflow**. It creates the table and storage bucket, stores the API keys as function secrets and deploys the four functions.
+6. Run **TestFlight** again. The new build reads `SUPABASE_URL` and `SUPABASE_ANON_KEY`, so it uses the backend.
+
+If you build from Xcode instead, type the URL and anon key into `Config` in `Solenne/Services/Backend.swift`. To deploy from a computer:
 
 ```bash
-supabase link --project-ref <your-project>
+supabase link --project-ref <ref>
 ```
 
 ```bash
@@ -67,20 +84,18 @@ supabase secrets set ANTHROPIC_API_KEY=... ELEVENLABS_API_KEY=...
 ```
 
 ```bash
-supabase functions deploy generate-story reflect lifestyle-tags clone-voice
+supabase functions deploy
 ```
 
-Then, in Supabase, turn on **Authentication → Anonymous sign-ins**. Fill in `supabaseURL` and `supabaseAnonKey` in `Solenne/Services/Backend.swift` → `Config`.
-
-When those are set:
+What happens once it's connected:
 
 - Each install signs in anonymously. Every function checks the user's JWT and enforces a per-user daily cap, set in `DAILY_LIMITS` in `supabase/functions/_shared/common.ts`.
-- `generate-story` writes the story with Claude (`claude-opus-5-5`, with server-side refusal fallbacks turned on). It then narrates the story once with ElevenLabs and stores the MP3 in the `stories` bucket. The app streams that file and maps the playback time onto the text.
-- `reflect` writes the warm one-line reflections during onboarding. `lifestyle-tags` fills the profile tags.
-- `clone-voice` sends the 10-second sample to ElevenLabs instant voice cloning. After that, stories are narrated in the user's own voice.
-- If any call fails, the app falls back to on-device generation. A story is never blocked.
+- `generate-story` writes the story with Claude (`claude-opus-5-5`, with server-side refusal fallbacks turned on). It narrates the story once with ElevenLabs (`eleven_multilingual_v2`) in the voice the user picked, and stores the MP3 in the `stories` bucket. The app streams that file and maps the playback time onto the text.
+- `clone-voice` sends the 10-second sample to ElevenLabs instant voice cloning. From then on, stories use the user's own voice.
+- `reflect` and `lifestyle-tags` write the onboarding reflections and the profile tags.
+- If any call fails, the app falls back to on-device generation and the iOS voice. A story is never blocked.
 
-The ElevenLabs voice ids in `Services/Voices.swift` are premade library voices. Replace them with the voices you choose.
+The 7 curated voices map to ElevenLabs premade voices in `Services/Voices.swift` (`elevenLabsID`). To use different voices, copy their ids from your ElevenLabs Voice Library. In-app voice previews still use the iOS voices; only the stories themselves are narrated by ElevenLabs.
 
 ## Before App Store submission
 

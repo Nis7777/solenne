@@ -5,12 +5,20 @@ import Security
 /// (Claude for story text, ElevenLabs for narration and voice cloning).
 /// See README → "Backend". Leave empty to run fully offline.
 enum Config {
-    static let supabaseURL = ""          // e.g. "https://abcdefgh.supabase.co"
-    static let supabaseAnonKey = ""      // Project Settings → API → anon public key
+    /// Set by the TestFlight workflow from the GitHub variables SUPABASE_URL / SUPABASE_ANON_KEY,
+    /// or type them into the fallbacks below when building from Xcode.
+    static let supabaseURL = infoValue("SolenneSupabaseURL") ?? ""          // e.g. "https://abcdefgh.supabase.co"
+    static let supabaseAnonKey = infoValue("SolenneSupabaseAnonKey") ?? ""  // Project Settings → API → anon public key
     static let instagramAppID = ""       // Meta app id, enables direct Instagram Stories sharing
     static let termsURL = URL(string: "https://example.com/terms")!
     static let privacyURL = URL(string: "https://example.com/privacy")!
     static let supportEmail = "hello@example.com"
+
+    private static func infoValue(_ key: String) -> String? {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String,
+              !value.isEmpty, !value.hasPrefix("$(") else { return nil }
+        return value.hasSuffix("/") ? String(value.dropLast()) : value
+    }
 }
 
 enum BackendError: LocalizedError {
